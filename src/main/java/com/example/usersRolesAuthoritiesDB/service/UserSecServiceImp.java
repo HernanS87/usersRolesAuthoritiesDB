@@ -1,12 +1,15 @@
 package com.example.usersRolesAuthoritiesDB.service;
 
 import com.example.usersRolesAuthoritiesDB.dto.UserSecDto;
+import com.example.usersRolesAuthoritiesDB.mapper.UserSecMapper;
+import com.example.usersRolesAuthoritiesDB.model.Permission;
 import com.example.usersRolesAuthoritiesDB.model.Role;
 import com.example.usersRolesAuthoritiesDB.model.UserSec;
 import com.example.usersRolesAuthoritiesDB.repository.UserSecRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +18,13 @@ public class UserSecServiceImp implements UserSecService{
 
     @Autowired
     private UserSecRepository userRepository;
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private UserSecMapper userSecMapper;
+
 
     @Override
     public List<UserSec> findAll() {
@@ -33,7 +43,21 @@ public class UserSecServiceImp implements UserSecService{
 
     @Override
     public UserSec save(UserSecDto userDto) {
-        return null;
+
+        var roles = new HashSet<Role>();
+        Role readRole;
+
+        for (String rol : userDto.getRoles()) {
+            readRole = roleService.findRoleByName(rol).orElse(null);
+            if (readRole != null) {
+                //si encuentro, guardo en la lista
+                roles.add(readRole);
+            }
+        }
+
+        if (roles.isEmpty()) return null; //TODO delvolver un optional vacío y cambiar el controller para que devuelva un 400
+
+        return userRepository.save(userSecMapper.userSecDtoToEntity(userDto, roles));
     }
 
 
