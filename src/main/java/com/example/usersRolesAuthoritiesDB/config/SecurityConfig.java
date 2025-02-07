@@ -11,12 +11,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.ArrayList;
@@ -41,44 +38,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService){
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(passwordEncoder());
-        provider.setUserDetailsService(userDetailsService());
+        provider.setUserDetailsService(userDetailsService);
         return provider;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
-        return NoOpPasswordEncoder.getInstance();
+        return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(){
-        var usersList = new ArrayList<UserDetails>();
-
-        usersList.add(User
-                .withUsername("hernan")
-                .password("1234")
-                .roles("ADMIN")
-                .authorities("CREATE", "READ", "UPDATE", "DELETE")
-                .build());
-
-        usersList.add(User
-                .withUsername("fabri")
-                .password("1234")
-                .roles("NERD")
-                .authorities("CREATE", "READ")
-                .build());
-
-        usersList.add(User
-                .withUsername("juan")
-                .password("1234")
-                .roles("CARETA")
-                .authorities("BASIC")
-                .build());
-
-        return new InMemoryUserDetailsManager(usersList);
-    }
 
 }
